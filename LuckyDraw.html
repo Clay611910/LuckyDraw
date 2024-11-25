@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Draw</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to right, #f06, #4a90e2);
+      color: white;
+      overflow: hidden;
+      animation: backgroundAnimation 10s ease-in-out infinite;
+    }
+    @keyframes backgroundAnimation {
+      0% {background: linear-gradient(to right, #f06, #4a90e2);}
+      50% {background: linear-gradient(to right, #4a90e2, #f06);}
+      100% {background: linear-gradient(to right, #f06, #4a90e2);}
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+      z-index: 1;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    .result {
+      font-size: 2em;
+      font-weight: bold;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+    .prize {
+      font-size: 1.5em;
+      color: #FFD700;
+    }
+    .loser {
+      color: #FF6347;
+    }
+    button {
+      background-color: #ff80b5;
+      border: none;
+      padding: 15px 30px;
+      color: white;
+      font-size: 1.2em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #ff4081;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .fireworks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to the Lucky Draw!</h1>
+    <p>Click the button below to try your luck!</p>
+    <button onclick="startDraw()">Try Your Luck</button>
+    <div class="result" id="result"></div>
+    <canvas class="fireworks" id="fireworks"></canvas>
+  </div>
+
+  <script>
+    let winners = 0; // Counter for total winners
+    const prizes = [
+      { name: "Rain", rank: "1st" },
+      { name: "YYY", rank: "2nd" },
+      { name: "Rose", rank: "3rd" },
+    ];
+
+    function startDraw() {
+      const resultElement = document.getElementById("result");
+
+      if (winners < 3) { // Check if there are still prizes left
+        const isWinner = Math.random() < 0.33; // 33% chance of winning for each person
+
+        if (isWinner && winners < 3) {
+          const prize = prizes[winners]; // Assign prize based on the current winner count
+          resultElement.innerHTML = `🎉 Congratulations! You're the ${prize.rank} winner and won a perfume called "${prize.name}"! 🎉`;
+          resultElement.classList.add("prize");
+          winners++; // Increment the winners count
+          launchFireworks();
+        } else {
+          resultElement.textContent = "😢 Sorry, better luck next time!";
+          resultElement.classList.add("loser");
+        }
+      } else {
+        resultElement.innerHTML = "🎉 All 3 prizes have been claimed! 🎊";
+        resultElement.classList.remove("loser");
+        resultElement.classList.add("prize");
+      }
+    }
+
+    function launchFireworks() {
+      const canvas = document.getElementById("fireworks");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const fireworks = [];
+
+      function Firework(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 3 + 1;
+        this.alpha = 1;
+        this.fade = Math.random() * 0.03 + 0.02;
+      }
+
+      Firework.prototype.update = function () {
+        this.alpha -= this.fade;
+      };
+
+      Firework.prototype.draw = function () {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = `rgba(${this.color},${this.alpha})`;
+        ctx.fill();
+      };
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        fireworks.forEach((firework, index) => {
+          firework.update();
+          firework.draw();
+          if (firework.alpha <= 0) fireworks.splice(index, 1);
+        });
+        if (fireworks.length > 0) requestAnimationFrame(animate);
+      }
+
+      function createFireworks() {
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height / 2;
+          const color = `${Math.floor(Math.random() * 255)},${Math.floor(
+            Math.random() * 255
+          )},${Math.floor(Math.random() * 255)}`;
+          fireworks.push(new Firework(x, y, color));
+        }
+        animate();
+      }
+
+      createFireworks();
+    }
+  </script>
+</body>
+</html>
